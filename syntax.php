@@ -52,11 +52,17 @@ class syntax_plugin_lastmod extends DokuWiki_Syntax_Plugin {
 
     function handle($match, $state, $pos, &$handler){
 
-        global $ID,$INFO;
+        global $ID, $INFO, $conf;
 
-        if (preg_match("/:/", $match)) {
+        if (preg_match("/#/", $match)) {
+            preg_match("/#([^~#]*)/", $match, $matches);
+            $dformat = $matches[1];
+        }
+        else {
+            $dformat = $conf['dformat'];
+        }
 
-            preg_match("/:([^~]*)/", $match, $matches);
+        if (preg_match("/^[^#]*(?:#[^~#]*#)?:([^#~]*)/", $match, $matches)) {
 
             $id = $matches[1];
 
@@ -77,24 +83,24 @@ class syntax_plugin_lastmod extends DokuWiki_Syntax_Plugin {
 
         }
     
-        return array($lastmod);
+        return array($lastmod, $dformat);
     }
 
     /**
      * Create output
      */
     function render($mode, &$renderer, $data) {
-        global $INFO, $conf;
+        global $INFO;
 
         if($mode == 'xhtml'){
 
-            if (preg_match("/%/", $conf['dformat'])) {
+            if (preg_match("/%/", $data[1])) {
             
-                $renderer->doc .= strftime($conf['dformat'], $data[0]);
+                $renderer->doc .= strftime($data[1], $data[0]);
 
             } else {
 
-                $renderer->doc .= date($conf['dformat'], $data[0]);
+                $renderer->doc .= date($data[1], $data[0]);
 
             }
 
